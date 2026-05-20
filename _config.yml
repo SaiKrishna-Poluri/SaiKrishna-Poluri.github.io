@@ -18,7 +18,7 @@ permalink: /:year/:month/:day/:title/
 show_excerpts: true
 
 header_pages:
-  - portfolio.md
+  - portfolio/index.html
   - about.md
 
 # Don't process the portfolio page through Liquid
