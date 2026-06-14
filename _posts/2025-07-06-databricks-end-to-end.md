@@ -26,7 +26,7 @@ From a decade in Microsoft Data, my candid take on Databricks' end-to-end ambiti
 
 My journey in the data world began over a decade ago, deeply embedded in the Microsoft ecosystem. From the foundational SQL Server and MSBI stack, I navigated the evolving landscape of Azure Data Factory, then embraced Azure Databricks, and later delved into Azure Synapse Analytics. Most recently, I've been spending considerable time with Microsoft Fabric, getting certified and doing POCs. This long-standing relationship with Microsoft's data offerings gives me a unique lens through which to view Databricks' latest announcements.
 
-And frankly, what I saw at the recent Databricks Data + AI Summit was really impressive. Databricks is not only enhancing its capabilities, it's actively positioning itself as **the** singular, end-to-end platform for data engineering, analytics, and AI. This means a concerted effort to reduce, and in some cases eliminate, the need for many external tools we've traditionally relied upon. From my "Microsoft-first" perspective, this is a fascinating and potentially disruptive shift.
+And frankly, what I saw at the recent Databricks Data + AI Summit was really impressive. Databricks is not only enhancing its capabilities; it's actively positioning itself as **the** singular, end-to-end platform for data engineering, analytics, and AI. This means a concerted effort to reduce, and in some cases eliminate, the need for many external tools we've traditionally relied upon. From my "Microsoft-first" perspective, this is a fascinating and potentially disruptive shift.
 
 Let's unpack some of the most impactful announcements from the Summit, and why they paint a picture of Databricks becoming a truly standalone powerhouse.
 
@@ -34,7 +34,7 @@ Let's unpack some of the most impactful announcements from the Summit, and why t
 
 ### 1. Lakebase: Bringing Operational Databases to the Lakehouse Party
 
-This was a massive revelation for me. Databricks is now integrating a fully-managed PostgreSQL offering, powered by Neon, directly into its Data Intelligence Platform. **Lakebase** isn't just about analytics; it's about handling operational workloads natively within the lakehouse. For data engineers like myself, who've often had to wrangle data between transactional databases and analytical systems, this means a significantly simplified architecture. Imagine building real-time applications and AI agents with transactional capabilities right there, no messy ETL pipelines just to move data around. It's a huge step towards true data unification.
+This was a massive revelation for me. Databricks is now integrating a fully-managed PostgreSQL offering, powered by Neon, directly into its Data Intelligence Platform. **Lakebase** isn't just about analytics; it's about handling operational workloads natively within the lakehouse. For data engineers like myself, who've often had to wrangle data between transactional databases and analytical systems, this means a significantly simplified architecture. Imagine building real-time applications and AI agents with transactional capabilities right there — no messy ETL pipelines just to move data around. It's a huge step towards true data unification.
 
 ### 2. Agent Bricks: No-Code Power for AI Agents
 

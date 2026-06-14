@@ -45,7 +45,7 @@ It helps to be precise about what each of these is before describing what each d
 
 **Claude Cowork** is Anthropic's desktop agent layer — a separate product, by a different team, with a different paradigm. It runs natively on your machine and gives Claude access to your local files, connectors, and applications. **Dispatch** is a feature inside Cowork that lets you assign tasks remotely from your phone while Claude works on your desktop. **Computer Use** is the underlying capability that lets Claude actually operate your screen when no direct connector exists — moving the mouse, clicking, navigating browsers, typing into apps. Claude's hands, essentially.
 
-These are two distinct bets on what an enterprise agent should look like. OpenClaw asks: *what if you compose specialised agents into a workflow?* Claude Cowork asks: *what if a single capable model just operates the computer the way a person does?*
+These are two distinct bets on what an enterprise agent should look like. OpenClaw asks: *what if you compose specialized agents into a workflow?* Claude Cowork asks: *what if a single capable model just operates the computer the way a person does?*
 
 I wanted to feel the difference between those two answers, so I ran both — in parallel, independently, no integration.
 
@@ -73,13 +73,13 @@ That context file is the secret ingredient. Without it, you get a generic agent.
 
 What I watched OpenClaw do: pull a fresh batch of messages, classify each by intent and urgency, cross-reference any related Slack thread to enrich the context, then route each one to the appropriate action — reply, escalate, or close. End-to-end, no human in the loop after kickoff, all in a single composed pipeline.
 
-The insight from this experiment is straightforward: **specialised agents, each built for a specific skill, composed by an orchestrator, give you a workflow.** No single agent did the whole job. The pipeline did. That's the OpenClaw mental model.
+The insight from this experiment is straightforward: **specialized agents, each built for a specific skill, composed by an orchestrator, give you a workflow.** No single agent did the whole job. The pipeline did. That's the OpenClaw mental model.
 
 ## Experiment 2 — Claude Cowork + Computer Use: One Agent, Your Whole Desktop
 
 Separately — and I want to stress separately — I ran a Claude Cowork experiment. Different session. Different setup. No connection to the OpenClaw work at all.
 
-For this one I set up a simulated data engineering environment on my laptop: Azure Databricks open in the browser, Slack, email. Then I gave the agent a task through Cowork. What followed wasn't a chatbot response. Browser tabs opened on their own. It navigated to Azure Databricks, created a notebook, wrote SQL, and executed it. Not scaffolded code for me to run — it ran it. Then it read the output, identified an issue, switched to **Databricks Genie** — an AI agent powered by Anthropic's Claude model that writes code, analyses outputs, and debugs and fixes issues in both Python and SQL — iterated, and fixed it. I was watching my own screen work without me.
+For this one I set up a simulated data engineering environment on my laptop: Azure Databricks open in the browser, Slack, email. Then I gave the agent a task through Cowork. What followed wasn't a chatbot response. Browser tabs opened on their own. It navigated to Azure Databricks, created a notebook, wrote SQL, and executed it. Not scaffolded code for me to run — it ran it. Then it read the output, identified an issue, switched to **Databricks Genie** — an AI agent powered by Anthropic's Claude model that writes code, analyzes outputs, and debugs and fixes issues in both Python and SQL — iterated, and fixed it. I was watching my own screen work without me.
 
 **What happened in a single uninterrupted Cowork session on my laptop:** Opened Azure Databricks → created a notebook → wrote and executed SQL → read the output → identified a data issue → opened Databricks Genie (AI agent powered by Claude — writes, debugs, and fixes Python & SQL) → ran a corrective query → confirmed the fix → posted a summary to Slack → drafted a follow-up email with findings. I approved two permission prompts. That was my entire contribution to the session.
 
@@ -93,7 +93,7 @@ Two paradigms. Two experiments. Both running on commodity hardware, both billing
 
 Watching either of those experiments run is one thing. The thing that genuinely stopped me cold came when I asked myself a different question.
 
-What happens when you give a system like this — either flavour — an isolated enterprise VM with every tool a Data Engineer uses day to day?
+What happens when you give a system like this — either flavor — an isolated enterprise VM with every tool a Data Engineer uses day to day?
 
 Jira or Azure DevOps for tickets. Slack for team communication. Email for stakeholders. A browser with Databricks, Azure Portal, and documentation. The same surface a new hire gets on day one. The agent reads the ticket, correlates it with the Slack thread, cross-references the email chain, writes the fix, tests it, posts the Jira update, sends the Slack message, replies to the email. Full loop. Closed.
 
@@ -115,7 +115,7 @@ The agents I ran weren't doing trivial tasks. They were reading messages with am
 
 Let me be direct about something the AI industry often dances around: this technology, at enterprise scale, will eliminate categories of work. Not every job in those categories — but the monotonous, repetitive, context-interpretation portions of those roles.
 
-The highest displacement risk correlates almost perfectly with **"work that is high-volume, rule-adjacent, and communication-heavy."** That is most of what large enterprise operations centres actually do. That is most of what a significant portion of the white-collar workforce does, every day.
+The highest displacement risk correlates almost perfectly with **"work that is high-volume, rule-adjacent, and communication-heavy."** That is most of what large enterprise operations centers actually do. That is most of what a significant portion of the white-collar workforce does, every day.
 
 **A note from my own domain:** My day job involves Finance Data Engineering pipelines — complex integrations, data quality governance, and cross-system reconciliation workflows. This domain is dense with exactly the kind of repetitive, rule-heavy communication that agents excel at: pipeline failure triage, data quality flag follow-ups, cross-system sync requests. Based on what I tested, I can already see 60–70% of that communication overhead being agent-handleable in the near term. That's not speculation — it's extrapolating from what ran on my laptop last week.
 
@@ -128,7 +128,7 @@ Here's what made my laptop experiments feel less like a hobby project and more l
 > *Engineers are going to be expected to describe problems coherently, turn them into prompts, and supervise the work of agents. That's the new job description.*
 > — Goldman Sachs CIO Marco Argenti on deploying Devin
 
-What's striking about Devin is how narrow it still is — it operates almost exclusively within the software engineering toolchain. Code, tests, PRs, version control. It doesn't read your email, it doesn't post to Slack on your behalf, it doesn't open Databricks and analyse query results, it doesn't cross-reference a Slack thread with a Jira ticket and a Teams message to form a complete picture of what's going wrong.
+What's striking about Devin is how narrow it still is — it operates almost exclusively within the software engineering toolchain. Code, tests, PRs, version control. It doesn't read your email, it doesn't post to Slack on your behalf, it doesn't open Databricks and analyze query results, it doesn't cross-reference a Slack thread with a Jira ticket and a Teams message to form a complete picture of what's going wrong.
 
 That broader scope is exactly what my two experiments pointed at — from two different angles. The OpenClaw experiment showed how composed agents can span communication channels in a workflow. The Claude Cowork experiment showed how a single agent with Computer Use can span them by operating the screen directly. Different paradigms, same destination: agents that span tools, contexts, and surfaces — not just one toolchain.
 
@@ -142,7 +142,7 @@ Here's the honest counter-argument to my own enthusiasm: enterprise environments
 
 **The identity problem.** Agents need credentials. Credentials need governance. When an agent sends an email on your behalf or closes a ticket in ServiceNow, what's the audit trail? Who's accountable when the 10% exception causes a real problem? Enterprise risk frameworks aren't wrong to ask these questions.
 
-**Change management.** The people whose jobs are most at risk are also the people who know where the bodies are buried — the edge cases, the tribal knowledge, the undocumented exceptions. You can't replace them until you've extracted that knowledge. And extracting it requires their cooperation. That's a delicate organisational conversation.
+**Change management.** The people whose jobs are most at risk are also the people who know where the bodies are buried — the edge cases, the tribal knowledge, the undocumented exceptions. You can't replace them until you've extracted that knowledge. And extracting it requires their cooperation. That's a delicate organizational conversation.
 
 The agents aren't waiting for enterprise approval. They're already running in engineers' personal workflows, learning the terrain. By the time procurement catches up, the patterns will already be set.
 
@@ -160,13 +160,13 @@ And — relevant to my two experiments — being fluent in *both* paradigms matt
 
 ## The Paradigm Shift, Simply Put
 
-Every previous wave of enterprise software automation — ERP, RPA, low-code platforms — required processes to be formalised before they could be automated. You had to map the workflow, hardcode the rules, build the connectors. The limitation was always: *if it's in language, it's not automatable.*
+Every previous wave of enterprise software automation — ERP, RPA, low-code platforms — required processes to be formalized before they could be automated. You had to map the workflow, hardcode the rules, build the connectors. The limitation was always: *if it's in language, it's not automatable.*
 
 LLM-powered agents break that constraint entirely. Language *is* the interface now. The messy, unstructured, context-dependent communication that makes up most of knowledge work — the emails, the Slack threads, the meeting follow-ups, the ticket descriptions — is now the primary substrate for automation, not the exception to it.
 
-That is a genuine paradigm shift. Not a productivity improvement. Not a feature. A structural change in what categories of human labour have economic moats.
+That is a genuine paradigm shift. Not a productivity improvement. Not a feature. A structural change in what categories of human labor have economic moats.
 
-I built — or rather, ran — two flavours of this on a Saturday afternoon. Both running on commodity hardware. Both costing roughly what a mid-tier API subscription costs. The barrier to enterprise transformation is no longer technological. It's organisational, legal, and cultural. And those barriers erode faster than anyone expects once a decision-maker sees it live.
+I built — or rather, ran — two flavors of this on a Saturday afternoon. Both running on commodity hardware. Both costing roughly what a mid-tier API subscription costs. The barrier to enterprise transformation is no longer technological. It's organizational, legal, and cultural. And those barriers erode faster than anyone expects once a decision-maker sees it live.
 
 We're early. We're not as early as most people think.
 
