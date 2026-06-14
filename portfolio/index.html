@@ -5,23 +5,204 @@ title: Portfolio
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Saikrishna Poluri — Portfolio</title>
-  <link rel="canonical" href="https://saikrishna-poluri.github.io/databricks-career-hub/portfolio.html">
-  <meta name="robots" content="noindex">
-  <meta http-equiv="refresh" content="0; url=https://saikrishna-poluri.github.io/databricks-career-hub/portfolio.html">
-  <script>location.replace("https://saikrishna-poluri.github.io/databricks-career-hub/portfolio.html");</script>
-  <style>
-    body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background:#0b0e14; color:#e8ecf4;
-           display:flex; min-height:100vh; align-items:center; justify-content:center; margin:0; text-align:center; }
-    a { color:#3dd6b5; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saikrishna Poluri — Lead Data Engineer</title>
+  <meta name="description" content="Saikrishna Poluri — Lead Data Engineer. Azure, Microsoft Fabric, Databricks, Power BI, and GenAI. 9+ years building enterprise data platforms.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div>
-    <p>Redirecting to my portfolio &amp; Databricks career hub…</p>
-    <p>If you are not redirected automatically,
-       <a href="https://saikrishna-poluri.github.io/databricks-career-hub/portfolio.html">click here</a>.</p>
-  </div>
+<body id="top">
+  <nav class="topnav">
+    <a class="brand" href="#top">Saikrishna Poluri</a>
+    <a class="navlink" href="mailto:sk.poluri8@gmail.com">Email</a>
+    <a class="navlink" href="https://linkedin.com/in/saikrishna-poluri" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="navlink" href="https://github.com/SaiKrishna-Poluri" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+
+  <main class="page">
+    <article class="content">
+      <header class="page-head">
+        <span class="track-badge open">&#9679; Open to new roles &middot; any location</span>
+        <h1>Saikrishna Poluri</h1>
+        <p class="lede">Lead Data Engineer &mdash; Azure &middot; Microsoft Fabric &middot; Databricks &middot; Power BI &middot; GenAI. 9+ years architecting enterprise data platforms; open to Lead and Staff Data Engineer, Azure / Microsoft Fabric, and Databricks roles.</p>
+      </header>
+
+      <p>I design, build, and run production data platforms across the Microsoft Azure ecosystem &mdash; Azure Data Factory, ADLS Gen2, Azure Synapse, Microsoft Fabric, and Azure Databricks. I build Bronze/Silver/Gold medallion pipelines on Delta Lake with governance and lineage, design Power BI semantic models for executive reporting, and back every release with CI/CD (Azure DevOps, GitHub), monitoring, runbooks, and FinOps discipline. In the past year I also shipped three production GenAI agents on the lakehouse. My domain depth is enterprise finance &mdash; Record-to-Report, P&amp;L, Plan/Budget/Forecast/Actuals &mdash; across SAP, JDE, Hyperion HFM, IBM DB2, and PeopleSoft, with a track record of explaining architecture tradeoffs to CFO-level and executive stakeholders.</p>
+      <p>
+        <a href="mailto:sk.poluri8@gmail.com">sk.poluri8@gmail.com</a> &middot;
+        <a href="https://linkedin.com/in/saikrishna-poluri" target="_blank" rel="noopener">LinkedIn</a> &middot;
+        <a href="https://github.com/SaiKrishna-Poluri" target="_blank" rel="noopener">GitHub</a> &middot;
+        TX, US &middot; open to relocation
+      </p>
+
+      <h2>Flagship work</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>ADM &mdash; Finance R2R Lakehouse &amp; Production GenAI Agents</h3>
+          <p><strong>What:</strong> I lead end-to-end delivery of Finance Record-to-Report analytics at Archer Daniels Midland. I architected medallion pipelines on Azure Databricks and ADF that integrate JDE, SAP, HFM, IBM DB2, and IBM APGO Web Wire into Delta Lake with lineage and governance, feeding Power BI semantic models and KPI frameworks (P&amp;L, Budget vs. Actual, Expense Forecasting, EHS, Capital Allocation). On the same platform I built and shipped three production GenAI agents over PeopleSoft and SAP labor data: a Genie Space data agent, a Vector Search RAG assistant, and a multi-agent router &mdash; hosted as a Databricks App with row- and column-level security.</p>
+          <div class="pill-row"><span class="pill">Azure Databricks</span><span class="pill">Delta Lake</span><span class="pill">ADF</span><span class="pill">Power BI</span><span class="pill">Unity Catalog</span><span class="pill">Genie</span><span class="pill">Vector Search</span><span class="pill">Databricks Apps</span></div>
+          <p><strong>Impact:</strong> Weekly-to-yearly reporting for the Executive Committee and CFO-level consumers; the GenAI agents serve 100+ users (including ED/VP/C-suite) over a 10,000+ employee global workforce dataset, handling 1,000+ queries per day across 30+ policy documents. Drove an estimated ~$500K in annual compute savings through FinOps tuning.</p>
+        </div>
+        <div class="card">
+          <h3>Maersk &mdash; Fact-Based Reporting &amp; Dremio Semantic Layer</h3>
+          <p><strong>What:</strong> I delivered end-to-end data engineering for Maersk's Fact-Based Reporting program: metadata-driven ADF and PySpark ingestion of SAP S/4HANA, SAP AC-DOCA Universal Journal, and Hyperion HFM into Delta on ADLS Gen2, modeling in Databricks, publication to Azure Synapse Dedicated SQL Pool, and migration of SSAS multidimensional cubes to Azure Analysis Services Tabular. I then implemented a Dremio and Power BI semantic-layer lakehouse and moved managed tables to external tables for governance and cost control.</p>
+          <div class="pill-row"><span class="pill">Azure Synapse</span><span class="pill">ADF</span><span class="pill">PySpark</span><span class="pill">Delta Lake</span><span class="pill">SSAS / AAS Tabular</span><span class="pill">Dremio</span><span class="pill">Power BI</span><span class="pill">SAP S/4HANA</span></div>
+          <p><strong>Impact:</strong> A multi-million-dollar annual infrastructure cost reduction from the semantic-layer lakehouse, faster CFO-level dashboards, and lower-latency Finance analyst exploration on Actuals, Plan, and Forecast P&amp;L.</p>
+        </div>
+        <div class="card">
+          <h3>PANYNJ &mdash; ICMS Financial Lakehouse &amp; PATH Ridership Migration</h3>
+          <p><strong>What:</strong> For the Port Authority of NY &amp; NJ I designed metadata-driven ADF and PySpark ingestion into ADLS Gen2 for the agency-wide Integrated Cost Management System, integrating SAP ECC FI, IBM Planning Analytics, and Budget PRO for Plan, Budget, Forecast, and Actuals reporting across Capital and Operating portfolios. In parallel I migrated legacy VBA and MS Access PATH ridership workloads to parameterized Azure Synapse pipelines with Power BI dashboards.</p>
+          <div class="pill-row"><span class="pill">ADF</span><span class="pill">PySpark</span><span class="pill">ADLS Gen2</span><span class="pill">Azure Synapse</span><span class="pill">Power BI</span><span class="pill">SAP ECC FI</span></div>
+          <p><strong>Impact:</strong> Agency-wide and division-level financial portfolio visibility for Finance leadership and retirement of fragile desktop tooling &mdash; all within a five-month contract.</p>
+        </div>
+        <div class="card">
+          <h3>ADM Treasury &mdash; &ldquo;Forecasting the Flow&rdquo; (Hackathon: 2nd place, Bard&rsquo;s Tale Award)</h3>
+          <p><strong>What:</strong> On an 11-person hackathon team I built the lakehouse and data/feature pipeline behind a probabilistic 90-day cash-flow forecasting platform for ADM Treasury, and served as Lead Presenter on Demo Day. I ingested 15 Agris ERP tables plus weather, corn-futures, and USDA feeds into a Bronze/Silver/Gold medallion, and engineered the governed feature views that fed the models. I contributed to the model design alongside our ML engineers, who built the cascaded quantile-regression models (XGBoost/LightGBM).</p>
+          <div class="pill-row"><span class="pill">Databricks</span><span class="pill">Delta Lake</span><span class="pill">Medallion</span><span class="pill">Feature Engineering</span><span class="pill">MLflow</span><span class="pill">Power BI</span></div>
+          <p><strong>Impact:</strong> The team placed 2nd of the field and won the Bard&rsquo;s Tale Award; delivery-timing accuracy 26&ndash;36% better than a naive baseline, with ~80% of outcomes inside the forecast interval &mdash; giving Treasury planning ranges instead of a single, brittle point estimate.</p>
+        </div>
+      </div>
+
+      <h2>Experience</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="when">Nov 2024 &ndash; Present</div>
+          <h3>Data &amp; Analytics Technical Lead</h3>
+          <div class="where">Archer Daniels Midland (ADM) &mdash; Senior Data Engineer Nov 2024&ndash;Mar 2026; promoted to Technical Lead Mar 2026</div>
+          <ul>
+            <li>Lead technical planning and end-to-end delivery for enterprise Finance Record-to-Report analytics: ingestion, lakehouse transformation, semantic modeling, reporting, stakeholder alignment, runbooks, monitoring, and hypercare.</li>
+            <li>Architected Bronze/Silver/Gold pipelines on Azure Databricks and ADF integrating JDE, SAP, HFM, IBM DB2, and IBM APGO Web Wire into Delta Lake with lineage and governance; delivered Power BI semantic models and KPI frameworks for Executive Committee and CFO-level consumers.</li>
+            <li>Built and deployed three production GenAI agents (Genie Space data agent, Vector Search RAG assistant, multi-agent router) serving 100+ users over a 10,000+ employee dataset with row- and column-level security.</li>
+            <li>Drove cost and performance optimization (cluster right-sizing, autoscaling, Delta tuning) for an estimated ~$500K in annual compute savings; automated orchestration across ADF, Databricks Jobs, and Power BI refreshes with CI/CD gates and monitoring in Azure DevOps.</li>
+            <li>Provide fit-gap and architecture recommendations and mentor junior engineers through design reviews, code reviews, and PySpark best practices.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">Azure Databricks</span><span class="pill">ADF</span><span class="pill">Delta Lake</span><span class="pill">Power BI</span><span class="pill">Unity Catalog</span><span class="pill">Azure DevOps</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="when">Jun 2024 &ndash; Nov 2024</div>
+          <h3>Senior Azure Data Engineer (Contract)</h3>
+          <div class="where">Port Authority of NY &amp; NJ</div>
+          <ul>
+            <li>Designed metadata-driven ADF and PySpark ingestion frameworks feeding ADLS Gen2 for the agency-wide Integrated Cost Management System financial lakehouse.</li>
+            <li>Integrated SAP ECC FI, IBM Planning Analytics, and Budget PRO for Plan, Budget, Forecast, and Actuals reporting across Capital and Operating portfolios.</li>
+            <li>Migrated legacy VBA and MS Access PATH ridership workloads to parameterized Azure Synapse pipelines and Power BI.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">ADF</span><span class="pill">PySpark</span><span class="pill">ADLS Gen2</span><span class="pill">Azure Synapse</span><span class="pill">Power BI</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="when">Sep 2021 &ndash; Jun 2024</div>
+          <h3>Azure Data Engineer, Fact-Based Reporting</h3>
+          <div class="where">Maersk</div>
+          <ul>
+            <li>Delivered end-to-end data engineering for the Fact-Based Reporting program, integrating SAP S/4HANA, SAP AC-DOCA Universal Journal, and Hyperion HFM into an Azure lakehouse for Actuals, Plan, and Forecast P&amp;L reporting.</li>
+            <li>Built metadata-driven ADF and PySpark ingestion to Delta on ADLS Gen2 and published refined datasets to Azure Synapse Dedicated SQL Pool; migrated SSAS multidimensional cubes to Azure Analysis Services Tabular.</li>
+            <li>Implemented a Dremio and Power BI semantic-layer lakehouse credited with a multi-million-dollar annual infrastructure cost reduction.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">Azure Synapse</span><span class="pill">ADF</span><span class="pill">PySpark</span><span class="pill">SSAS / AAS Tabular</span><span class="pill">Dremio</span><span class="pill">Power BI</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="when">Jul 2019 &ndash; Aug 2021</div>
+          <h3>Senior Data Engineer, Customer Data Management</h3>
+          <div class="where">Ecolab, India GCC</div>
+          <ul>
+            <li>Built Customer Data Management solutions on Azure using ADF, SSIS, PySpark, and Azure Databricks.</li>
+            <li>Customized TIBCO EBX for Master Data Management and executed the EBX 5.9 to 6.0.11 upgrade with zero downstream disruption.</li>
+            <li>Built a Power BI dashboard with embedded Power Apps for golden-copy/survivorship stewardship; optimized Azure infrastructure for recurring monthly cost savings.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">ADF</span><span class="pill">SSIS</span><span class="pill">PySpark</span><span class="pill">TIBCO EBX</span><span class="pill">Power BI</span><span class="pill">Power Apps</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="when">Aug 2018 &ndash; Jul 2019</div>
+          <h3>Senior Analytics Consultant, Worldwide Payment Services</h3>
+          <div class="where">Microsoft (via Brillio)</div>
+          <ul>
+            <li>Migrated on-premises SQL Server databases and SSIS workloads to Azure SQL Database and ADF using the SSIS Integration Runtime.</li>
+            <li>Rebuilt legacy SSRS reporting in Power BI; implemented U-SQL transformations in Azure Data Lake Analytics; developed dimensional models and SCD 0/1/2 patterns.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">Azure SQL DB</span><span class="pill">ADF</span><span class="pill">SSIS IR</span><span class="pill">U-SQL</span><span class="pill">Power BI</span></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="when">Jul 2016 &ndash; Aug 2018</div>
+          <h3>Software Engineer, Data Warehousing &amp; ETL</h3>
+          <div class="where">Maryland Lottery &amp; Atlantic Lottery (via Scientific Games)</div>
+          <ul>
+            <li>Designed and deployed SSIS packages, SSRS reports, and T-SQL stored procedures, views, and triggers for lottery data warehousing.</li>
+            <li>Managed SQL Server Agent scheduling, audit logging, and data validation; performed root-cause analysis and performance tuning for production ETL.</li>
+          </ul>
+          <div class="pill-row"><span class="pill">SSIS</span><span class="pill">SSRS</span><span class="pill">T-SQL</span><span class="pill">SQL Server</span></div>
+        </div>
+      </div>
+
+      <h2>Certifications</h2>
+      <div class="card-grid">
+        <div class="card"><h3>Microsoft Certified: Fabric Data Engineer Associate</h3><p>DP-700 &mdash; earned.</p></div>
+        <div class="card"><h3>Microsoft Certified: Fabric Analytics Engineer Associate</h3><p>DP-600 &mdash; earned.</p></div>
+        <div class="card"><h3>Microsoft Certified: Azure Data Engineer Associate</h3><p>DP-203 &mdash; earned.</p></div>
+        <div class="card"><h3>Microsoft Certified: Azure Data Fundamentals / Fundamentals</h3><p>DP-900 &amp; AZ-900 &mdash; earned.</p></div>
+        <div class="card"><h3>Databricks Lakehouse Fundamentals &middot; Dremio Verified Lakehouse Associate</h3><p>Earned.</p></div>
+        <div class="card"><h3>Databricks Certified Data Engineer (Associate &amp; Professional) &middot; GenAI Engineer Associate</h3><p><strong>In progress &mdash; targeting 2026.</strong></p></div>
+      </div>
+
+      <h2>Skills</h2>
+      <table>
+        <thead><tr><th>Area</th><th>Skills</th></tr></thead>
+        <tbody>
+          <tr><td>Azure &amp; Microsoft Fabric</td><td>Azure Data Factory, ADLS Gen2, Azure Synapse Analytics (Notebooks, SQL Analytics endpoints, dedicated &amp; serverless pools), Azure SQL, Azure Analysis Services, Microsoft Fabric (Lakehouse, Warehouse, Pipelines, Dataflows, Semantic Models, DirectLake), Azure DevOps</td></tr>
+          <tr><td>Data Engineering &amp; Lakehouse</td><td>Delta Lake, Bronze/Silver/Gold medallion, dimensional &amp; semantic modeling, CDC, SCD 0/1/2, schema evolution, metadata-driven ingestion, data quality, managed vs. external tables, lineage and governance</td></tr>
+          <tr><td>Languages</td><td>SQL, T-SQL, Spark SQL, Python, PySpark, U-SQL</td></tr>
+          <tr><td>BI &amp; Semantic Layers</td><td>Power BI, DAX, semantic models, DirectLake &amp; report performance tuning, SSAS Tabular and Multidimensional, Dremio, Denodo, Power Apps, Power Automate</td></tr>
+          <tr><td>Security, CI/CD &amp; DevOps</td><td>RBAC, Azure Key Vault, network security (VNet / Private Link), Git, Azure DevOps CI/CD, GitHub Actions, Terraform (working knowledge), monitoring, runbooks, hypercare</td></tr>
+          <tr><td>Databricks &amp; GenAI</td><td>Azure Databricks, Apache Spark, Unity Catalog, Lakeflow Jobs, Mosaic AI Vector Search, AI/BI Genie, Databricks Apps, RAG, multi-agent orchestration, MLflow, Anthropic Claude API, MCP</td></tr>
+          <tr><td>ERP &amp; Enterprise Systems</td><td>SAP S/4HANA, SAP ECC FI, SAP BW, SAP AC-DOCA Universal Journal, JDE, Hyperion HFM, IBM DB2, IBM Planning Analytics, PeopleSoft, TIBCO EBX, Budget PRO</td></tr>
+        </tbody>
+      </table>
+
+      <h2>What I bring</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Engineering depth across Azure &amp; Databricks</h3>
+          <ul>
+            <li>Production Spark and PySpark at enterprise scale, with Delta Lake design covering CDC, SCD 0/1/2, schema evolution, compaction, and performance tuning.</li>
+            <li>Broad Microsoft data platform: Azure Data Factory, Synapse, Microsoft Fabric, ADLS Gen2, Azure SQL, and Analysis Services, plus Power BI and external semantic layers (Dremio/Denodo).</li>
+            <li>Real orchestration and DevOps: Databricks Jobs coordinated with ADF and Redwood RunMyJobs, gated by Azure DevOps CI/CD with monitoring, runbooks, and hypercare.</li>
+            <li>FinOps evidence: cluster right-sizing and autoscaling at ADM (~$500K annual savings), the Maersk managed-to-external table shift, and recurring Azure cost savings at Ecolab.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Delivery, architecture &amp; leadership</h3>
+          <ul>
+            <li>End-to-end delivery ownership: technical planning, cross-team dependencies, stakeholder alignment, and hypercare for CFO-level Finance analytics.</li>
+            <li>Architecture advisory in practice: fit-gap recommendations on batch vs. near-real-time, CDC/SCD design, and semantic-layer selection.</li>
+            <li>Governance over sensitive data: lineage plus row- and column-level controls protecting HR and finance datasets in regulated environments.</li>
+            <li>Production GenAI: Genie, Vector Search RAG, multi-agent routing, and Databricks Apps &mdash; shipped, governed, and in daily use.</li>
+            <li>Mentoring and enablement: design reviews, code reviews, and engineering standards for junior engineers.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Education</h2>
+      <p>Bachelor of Technology (B.Tech), Electronics &amp; Communication Engineering &mdash; Jawaharlal Nehru Technological University, Anantapuramu, India, 2015.</p>
+
+      <p>
+        <a class="btn primary" href="mailto:sk.poluri8@gmail.com">Email me &mdash; sk.poluri8@gmail.com</a>
+      </p>
+    </article>
+  </main>
+
+  <footer>
+    <div>
+      <a href="mailto:sk.poluri8@gmail.com">sk.poluri8@gmail.com</a> &middot;
+      <a href="https://linkedin.com/in/saikrishna-poluri" target="_blank" rel="noopener">LinkedIn</a> &middot;
+      <a href="https://github.com/SaiKrishna-Poluri" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div>© 2026 Saikrishna Poluri &mdash; Lead Data Engineer. Targeting a Databricks role? See my <a href="https://saikrishna-poluri.github.io/databricks-career-hub/portfolio.html">Databricks-focused profile</a>.</div>
+  </footer>
 </body>
 </html>
