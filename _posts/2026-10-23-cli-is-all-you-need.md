@@ -16,10 +16,11 @@ tags:
   - devops
   - cli
 description: "A Lead Data Engineer's practical guide to the four-layer CLI stack (git, az, databricks, and AI coding agents), with install steps, guardrails, and end-to-end workflows from real enterprise work."
+excerpt: "A practical, first-person tour of the Git, Azure, Databricks, and AI-agent CLI stack, with the guardrails that make terminal-first delivery safer in enterprise data work."
 layout: post
 ---
 
-> **A note on names.** Every company name, URL, workspace ID, subscription, resource group, catalog, schema, and table in this article is a placeholder. The commands, the guardrails, and the stories are real.
+> **About the examples.** Organization-specific names, service URLs, and resource identifiers are illustrative placeholders. Incident details are sanitized and generalized; public product and documentation links are real.
 
 ---
 
@@ -51,9 +52,9 @@ That isn't an accident. CLIs were built for scripts, and an agent is essentially
 - **Structured output on demand.** `az ... -o json`, `databricks ... -o json`, and JMESPath `--query` filters mean the agent parses data instead of scraping it.
 - **Composability.** Output from `databricks` pipes into `jq`, which feeds an `az` command, which feeds a `git` commit. Portals don't compose.
 - **Self-documenting.** Every subcommand has `--help`. An agent can learn a tool it has never seen in the middle of a task.
-- **Same identity, same permissions.** The CLI authenticates as *you*. Every RBAC role and Unity Catalog grant still applies. The agent can't do anything you couldn't.
-- **An audit trail by default.** Every action is a command string in a transcript and a shell history. You can read it, diff it, replay it, and paste it into a ticket. A portal click leaves an activity-log entry if you're lucky.
-- **Same commands in CI.** What the agent runs on my laptop is what the pipeline runs in Azure DevOps. No translation step.
+- **Same configured identity, same effective permissions.** The CLI uses the identity or credential you configured, so RBAC and Unity Catalog still apply. That constrains the agent, but it can still misuse anything that identity can access; CI `run_as` identities and alternate credentials are separate paths that need their own controls.
+- **A useful evidence trail when you capture it.** Commands can be retained in a transcript, shell history, or CI log, while cloud activity, query, and job logs depend on the service and its audit configuration. Shell history can be incomplete and can expose secrets, so it needs retention and redaction rules.
+- **Same commands in CI, after you pin the context.** The workflow can be reused in Azure DevOps once versions, working directories, targets, and non-interactive authentication are explicit. That removes translation, not environment differences.
 
 A portal is built for a human with a mouse and patience. A CLI is built for a script. So the agent was always going to prefer the terminal. What surprised me was how much I'd come to prefer it too.
 
@@ -105,7 +106,7 @@ The config change that mattered most for us was **folder-based identity**. One e
 [user]
     name  = Your Name
     email = you@personal.example
-[includeIf "gitdir/i:C:/Users/<you>/repos/"]
+[includeIf "gitdir/i:C:/Users/your-user/repos/"]
     path = ~/.gitconfig-work
 ```
 
@@ -124,10 +125,16 @@ Every work repo lives under one `repos/` folder, one subfolder per project. Noth
 - **Worktrees for parallel work.** When an agent works on a branch, it gets its own folder, so my working copy is never disturbed:
 
 ```bash
-git fetch origin
-git worktree add ../ops-lakehouse-fix -b fix/sensor-baseline-total origin/main
-# ...work happens in ../ops-lakehouse-fix...
-git worktree remove ../ops-lakehouse-fix   # after merge
+repo_root="$PWD"
+git -C "$repo_root" fetch origin
+git -C "$repo_root" worktree add "$repo_root/../ops-lakehouse-fix" -b fix/sensor-baseline-total origin/main
+cd "$repo_root/../ops-lakehouse-fix" || exit
+# ...work happens in this worktree...
+git add -- path/to/changed/files
+git diff --cached                    # human review before the commit
+git commit -m "Fix sensor baseline total" # only after review
+cd "$repo_root" || exit
+git worktree remove "$repo_root/../ops-lakehouse-fix"   # after merge
 ```
 
 **Reviewing diffs: the safety net**
@@ -213,8 +220,9 @@ az datafactory pipeline-run query-by-factory \
   --filters operand="Status" operator="Equals" values="Failed" \
   --query "value[].{pipeline:pipelineName, runId:runId, start:runStart}" -o table
 
+run_id="<run-id>"
 az datafactory activity-run query-by-pipeline-run \
-  --factory-name adf-ingest-dev --run-id <run-id> \
+  --factory-name adf-ingest-dev --run-id "$run_id" \
   --last-updated-after  "2026-10-22T00:00:00Z" \
   --last-updated-before "2026-10-23T00:00:00Z" \
   --query "value[?status=='Failed'].{activity:activityName, error:error.message}" -o table
@@ -235,20 +243,28 @@ az keyvault secret list --vault-name kv-data-dev \
 az storage account show -n stdatalakedev01 \
   --query "networkRuleSet.{default:defaultAction, resourceRules:resourceAccessRules}" -o json
 
-az role assignment list --assignee <principal-id> --all \
+principal_id="<principal-id>"
+az role assignment list --assignee "$principal_id" --all \
   --query "[].{role:roleDefinitionName, scope:scope}" -o table
 ```
 
 **A lesson from the CLI that the portal never taught me.** When I deployed a small chat bot to App Service, `az webapp up` kept failing. The error named the exact permission my account lacked (write access on the App Service plan), which I was never going to get. Zip deploy only needed rights on the web app itself:
 
 ```bash
-az webapp config appsettings set -n app-chatbot-dev --settings PORT=8000 WEBSITES_PORT=8000
+# Source-code deployment; use the runtime's documented startup contract for its port.
 az webapp deployment source config-zip -n app-chatbot-dev --src bot.zip
 az webapp restart -n app-chatbot-dev
 az webapp log tail -n app-chatbot-dev
 ```
 
-(Newer CLI versions also offer `az webapp deploy --type zip`.) The port settings came from another CLI-visible failure: the app listened on one port while App Service probed another, and the log tail showed it plainly. Text errors are diagnosable. Spinning portal blades are not.
+(Newer CLI versions also offer `az webapp deploy --type zip`.) For a **custom container**, configure the container's listening port separately; `WEBSITES_PORT` is not a general setting for source-code deployments:
+
+```bash
+# Custom containers only: match the port the container listens on.
+az webapp config appsettings set -n app-chatbot-dev --settings "WEBSITES_PORT=8000"
+```
+
+In this case, the log tail showed that the container listened on one port while App Service probed another. That was one plausible cause to verify, not a universal App Service rule. Text errors are diagnosable. Spinning portal blades are not.
 
 ### Layer 3 — Databricks CLI: Real Data Context for the Agent
 
@@ -269,11 +285,11 @@ Make sure you're on the current CLI, not the legacy `databricks-cli` pip package
 
 **OAuth profiles (`~/.databrickscfg`)**
 
-We run two unrelated Databricks workspaces. I'm admin on both, and each hosts **both dev and prod, separated by Unity Catalog catalogs rather than by workspace**. The mental model that made everything click:
+We run two unrelated Databricks workspaces. I'm admin on both, and each hosts **both dev and prod, separated by Unity Catalog catalogs rather than by workspace**. That is our environment convention, not a Databricks requirement. The mental model that made everything click:
 
 > **Workspace = project. Catalog = environment.**
 
-So each repo uses exactly one CLI profile, forever. Dev versus prod is a bundle target and a catalog, never a different login.
+In this setup each repo standardizes one CLI profile. Dev versus prod is a bundle target and a catalog; a design with separate workspaces or identities would use separate profiles.
 
 ```bash
 databricks auth login --host https://adb-1111111111111111.1.azuredatabricks.net --profile OPS
@@ -283,7 +299,7 @@ databricks auth profiles            # both should show Valid: YES
 databricks current-user me -p OPS
 ```
 
-The resulting config holds no long-lived secret:
+The resulting config contains the host and auth settings. The current OAuth flow uses short-lived credentials in the CLI's credential cache rather than putting a long-lived token in `.databrickscfg`; the exact cache location and protection vary by CLI version and operating system, so I treat the cache as sensitive:
 
 ```ini
 # ~/.databrickscfg
@@ -296,7 +312,7 @@ host      = https://adb-2222222222222222.2.azuredatabricks.net
 auth_type = databricks-cli
 ```
 
-Notice there's **no `[DEFAULT]` profile.** That's deliberate. We used to have one, holding a personal access token. Removing it means a command without a profile *fails* instead of quietly hitting whichever workspace DEFAULT happened to point at. Failing loudly is a feature when an agent is typing.
+Notice there's **no `[DEFAULT]` profile.** That's deliberate in this example: a command without `-p` is expected to fail unless a bundle target, environment variable, or another configured default supplies credentials. The Databricks CLI normally uses a `DEFAULT` profile when one exists, and bundle host/profile resolution can also apply. Passing `-p` or setting `DATABRICKS_CONFIG_PROFILE` explicitly keeps the target deterministic.
 
 Here's the environment map every agent working in our repos knows:
 
@@ -312,16 +328,20 @@ One trap worth naming: our operations workspace has a legacy *default catalog*. 
 This is the single biggest quality upgrade for agent-written SQL and PySpark. Instead of guessing that a column is called `customer_id`, the agent looks it up and learns it's `cust_key`, a `BIGINT`, with a comment explaining the business meaning.
 
 ```bash
-databricks catalogs list -p OPS -o json | jq -r '.[].name'
+databricks catalogs list -p OPS -o json \
+  | jq -r '.[] | .name'
 
-databricks schemas list ops_dev -p OPS -o json | jq -r '.[].full_name'
+databricks schemas list ops_dev -p OPS -o json \
+  | jq -r '.[] | .full_name'
 
 databricks tables list ops_dev gold -p OPS -o json \
   | jq -r '.[] | "\(.name)\t\(.table_type)"'
 
 databricks tables get ops_dev.gold.fact_daily_counts -p OPS -o json \
-  | jq '{owner, comment, columns: [.columns[] | {name, type_text, comment}]}'
+  | jq '{owner, comment, columns: [(.columns // [])[] | {name, type_text, comment}]}'
 ```
+
+The current CLI returns JSON arrays for these list operations. Results are permission-filtered and have no guaranteed order, so the agent should treat them as an inventory, not as an authoritative sort order. Metadata visibility can also be granted with `BROWSE` without granting data access.
 
 Those column comments matter more now than they ever did. Every hour we spent documenting tables for Databricks Genie paid off a second time when coding agents started reading the same metadata.
 
@@ -330,30 +350,50 @@ Those column comments matter more now than they ever did. Every hour we spent do
 The CLI exposes the SQL Statement Execution API directly:
 
 ```bash
-databricks warehouses list -p OPS -o json | jq -r '.[] | "\(.id)\t\(.name)\t\(.state)"'
+databricks warehouses list -p OPS -o json \
+  | jq -r '.[] | "\(.id)\t\(.name)\t\(.state)"'
 
-databricks api post /api/2.0/sql/statements -p OPS --json '{
-  "warehouse_id": "<warehouse-id>",
-  "statement": "SELECT event_date, SUM(entries) AS entries FROM ops_dev.gold.fact_daily_counts WHERE event_date >= current_date() - 7 GROUP BY event_date ORDER BY event_date",
-  "wait_timeout": "30s"
-}' | jq '{state: .status.state, rows: .result.data_array}'
+warehouse_id="<warehouse-id>"
+statement_request="{
+  \"warehouse_id\": \"$warehouse_id\",
+  \"statement\": \"SELECT event_date, SUM(entries) AS entries FROM ops_dev.gold.fact_daily_counts WHERE event_date >= current_date() - 7 GROUP BY event_date ORDER BY event_date\",
+  \"wait_timeout\": \"30s\"
+}"
+statement_response=$(databricks api post /api/2.0/sql/statements -p OPS --json "$statement_request") || exit 1
+statement_id=$(printf '%s' "$statement_response" | jq -er '.statement_id') || exit 1
+
+for attempt in {1..60}; do
+  statement=$(databricks api get "/api/2.0/sql/statements/$statement_id" -p OPS -o json) || exit 1
+  state=$(printf '%s' "$statement" | jq -r '.status.state')
+  case "$state" in
+    SUCCEEDED|FAILED|CANCELED|CLOSED) break ;;
+    *) sleep 2 ;;
+  esac
+done
+
+printf '%s' "$statement" | jq '{state: .status.state, error: .status.error, rows: .result.data_array}'
+[ "$state" = SUCCEEDED ] || exit 1  # failed or still running after the polling budget
 ```
 
-Our standing rule: agents query **aggregates, counts, and metadata**, not raw rows. They need to know whether a total reconciles, not whose record is on line 4,012.
+The `wait_timeout` value bounds how long the initial POST waits; it can still return `PENDING` or `RUNNING`, which is why the example polls for a terminal state with a bounded retry budget. If that budget expires, the command exits without claiming success; the statement may still be running and must be checked or canceled separately. Larger SQL results can be paginated or truncated into result chunks, so follow the statement response's chunk metadata instead of assuming `data_array` is complete. Our standing rule is to query **aggregates, counts, and metadata**, not raw rows. The agent needs to know whether a total reconciles, not whose record is on line 4,012.
 
 **Jobs**
 
 ```bash
-databricks jobs list -p OPS -o json | jq -r '.[] | "\(.job_id)\t\(.settings.name)"'
+databricks jobs list -p OPS -o json \
+  | jq -r '.[] | "\(.job_id)\t\(.settings.name)"'
 
-databricks jobs list-runs --job-id <job-id> --limit 5 -p OPS -o json \
+job_id="<job-id>"
+databricks jobs list-runs --job-id "$job_id" --limit 5 -p OPS -o json \
   | jq -r '.[] | "\(.run_id)\t\(.state.result_state)\t\(.start_time)"'
 
-databricks jobs get-run <run-id> -p OPS -o json \
+run_id="<run-id>"
+databricks jobs get-run "$run_id" -p OPS -o json \
   | jq '.tasks[] | {task_key, run_id, result: .state.result_state}'
 
 # For multi-task jobs, pass the *task* run_id from the previous command
-databricks jobs get-run-output <task-run-id> -p OPS -o json | jq '{error, error_trace}'
+task_run_id="<task-run-id>"
+databricks jobs get-run-output "$task_run_id" -p OPS -o json | jq '{error, error_trace}'
 ```
 
 **Deploy with Databricks Asset Bundles**
@@ -385,15 +425,16 @@ targets:
     workspace:
       host: https://adb-1111111111111111.1.azuredatabricks.net
     run_as:
-      service_principal_name: <prod-deployer-sp-application-id>
+      service_principal_name: "prod-runner-sp-application-id"
     variables:
       catalog: ops_prd
 ```
 
-Two details are worth calling out:
+Three details are worth calling out:
 
-1. **Same host, different catalog.** Dev and prod differ by a catalog variable, which matches the "catalog = environment" model.
-2. **No `profile:` lines.** We added them once, then removed them. Profile names are personal (a teammate might call theirs something else), and CI authenticates without one. When a target only sets `host`, the CLI picks the local profile that matches that host.
+1. **Same host, different catalog.** Dev and prod differ by a catalog variable, which matches our "catalog = environment" convention. Workspace-catalog bindings and grants still determine what that target can reach.
+2. **No `profile:` lines.** We added them once, then removed them. Profile names are personal (a teammate might call theirs something else), and CI authenticates without one. When a target only sets `host`, the CLI can resolve a matching local profile when no higher-precedence bundle or environment credentials are present. CI still configures its service-principal authentication explicitly.
+3. **`run_as` is the runtime identity.** The service principal named there is the identity used by the deployed job or pipeline. It is separate from the CI identity that validates and deploys the bundle; the deployer needs permission to use the run identity, and the run identity needs only the data permissions required at runtime.
 
 Job scripts receive the catalog as a parameter, so the same code runs in either environment:
 
@@ -418,13 +459,13 @@ resources:
 The day-to-day loop:
 
 ```bash
-databricks bundle validate -t dev
-databricks bundle summary  -t dev    # what will deploy, with what names, where
+databricks bundle validate -t dev -o json # resolved target config for inspection
+databricks bundle summary  -t dev         # resolved resource names and paths
 databricks bundle deploy   -t dev
 databricks bundle run      -t dev nightly_refresh
 ```
 
-Always pass `-t`, even for dev. In `mode: development`, resource names get a per-user prefix and schedules are paused, so an agent deploying to dev can't trample a teammate's jobs. **Prod is never deployed from a laptop.** It ships from the pipeline, as the service principal, after a merged PR:
+Always pass `-t`, even for dev. In `mode: development`, the bundle applies development defaults such as per-user names and paused schedules, but explicit `root_path` or resource-name overrides can change isolation. Those defaults do not prove that two deployments cannot collide, so inspect the resolved target and code paths before running. **Prod is never deployed from a laptop.** It ships from the pipeline, as the service principal, after a merged PR:
 
 ```yaml
 # azure-pipelines.yml (excerpt; wired to main's branch policy as build validation)
@@ -433,7 +474,8 @@ steps:
     displayName: Unit tests
   - script: databricks bundle validate -t prod
     displayName: Validate bundle
-  # The prod deploy stage runs only on main, authenticated as the deployer service principal
+  # The prod deploy stage runs only on main, authenticated as the CI deployer.
+  # Jobs run as the service principal configured by the prod target's run_as block.
 ```
 
 ### Layer 4 — The AI Agents: Claude Code, Codex CLI, and Cursor
@@ -449,15 +491,18 @@ claude --version
 claude                                                # run inside a repo, sign in on first launch
 
 # Codex CLI
-npm install -g @openai/codex                          # any OS with Node.js
-brew install --cask codex                             # macOS
-codex                                                 # choose "Sign in with ChatGPT"
+npm install -g @openai/codex                          # Windows or any OS with Node.js
+# macOS / Linux standalone installer:
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
+codex                                                 # first launch: choose ChatGPT sign-in or another method
 
 # Cursor: install the editor from cursor.com, plus its terminal agent
 curl https://cursor.com/install -fsS | bash           # macOS / Linux / WSL
 brew install --cask cursor-cli                        # or, on macOS
 cursor-agent
 ```
+
+Codex CLI can use ChatGPT sign-in or a separately configured API key. Use the authentication path approved by your organization; CLI sign-in does not configure an API-backed application.
 
 On native Windows, install Git for Windows first so Claude Code has a Bash shell to work in. Behind a TLS-inspecting proxy, Node-based tools need `NODE_EXTRA_CA_CERTS` pointing at your proxy's root certificate. That one setting was the difference between Claude Code half-working and fully working on my corporate laptop.
 
@@ -494,8 +539,8 @@ running any databricks command.
 - Work on a feature branch. Show `git diff --stat` and the diff before any commit.
 
 ## Never
-- Deploy, run jobs, or write data to a prod target or prod catalog unless my
-  current message says "prod".
+- Deploy, run jobs, or write data to a prod target or prod catalog from this
+  local agent session. Production changes go through the approved CI process.
 - Commit to main, push, or open or merge PRs without my approval.
 - Print tokens, secrets, Key Vault values, or raw data rows.
 - Edit ~/.databrickscfg, run auth login, or disable TLS verification.
@@ -512,7 +557,8 @@ The repo-level file is short, because the real knowledge lives in the committed,
 Workspace OPS (CLI profile OPS). Dev: ops_dev, sandbox. Prod: ops_prd (read-only).
 Never write to legacy_default.
 Dev deploys are approved: `databricks bundle deploy -t dev` and dev job runs are fine.
-Before deploying, confirm the dev target writes only to ops_dev and show the name prefix.
+Before deploying, inspect the resolved dev target and source catalog paths; report the
+intended ops_dev target and anything validation cannot prove about hard-coded paths.
 Prod ships only through the pipeline.
 Tests: `pytest -q -m "not e2e"` locally; end-to-end verification runs in dev.
 ```
@@ -553,7 +599,7 @@ And the enforcement file. Instructions are a request; this is a rule:
 }
 ```
 
-Claude Code evaluates deny first, then ask, then allow, and deny rules hold in every permission mode. The `env` block means every `databricks` command the agent runs in this repo uses the right workspace, even if it forgets to pass `-p`. Be honest with yourself about what pattern rules are, though: a determined command can be phrased in ways a pattern doesn't anticipate. They're a seatbelt, not a wall. The wall is Unity Catalog permissions and a prod that only a service principal can touch (more on that below).
+Claude Code evaluates deny first, then ask, then allow, and deny rules hold in every permission mode. The `env` block supplies the OPS profile by default for commands that do not override it. An explicit `-p`, a different environment variable, bundle settings, or another credential can still change the effective context, so this is a default rather than identity enforcement. Be honest with yourself about what pattern rules are, though: a determined command can be phrased in ways a pattern doesn't anticipate. They're a seatbelt, not a wall. The enforcement boundary is effective Unity Catalog permissions, workspace bindings, and CI identity controls (more on that below).
 
 **Codex and Cursor get the same rules**
 
@@ -618,11 +664,11 @@ The config wasn't even the most valuable output. Along the way it surfaced:
 - The VS Code extension rewrite of `pyproject.toml` I mentioned earlier.
 - A duplicate clone pointing at a different remote than our source of truth.
 
-Then came the follow-on: retiring the old personal access token. Revoking a token breaks *everything* that uses it, everywhere, instantly, so the audit comes first and revocation comes last. The audit is a cross-tool chain that reads names and metadata only:
+Then came the follow-on: retiring the old personal access token. Revoking a token invalidates that credential for future requests, but every consumer needs an audit first: cached sessions, long-running processes, and propagation can make the operational impact less immediate than the API call. The audit is a cross-tool chain that reads names and metadata only:
 
 ```bash
-# Where might the old token still be used? Names only, never values.
-git grep -n -i "DATABRICKS_TOKEN" -- . ':!*.md'
+# Where might the old token still be used? Filenames only, never values.
+git grep -Il -i "DATABRICKS_TOKEN" -- . ':!*.md'
 
 az keyvault secret list --vault-name kv-data-dev \
   --query "[?contains(name, 'databricks')].name" -o tsv
@@ -631,10 +677,12 @@ az datafactory linked-service list --factory-name adf-ingest-dev \
   --query "[?properties.type=='AzureDatabricks'].name" -o tsv
 
 databricks token-management list -p OPS -o json \
-  | jq -r '.[] | "\(.token_id)\t\(.created_by_username)\t\(.comment)"'
+  | jq -r '.token_infos[] | "\(.token_id)\t\(.created_by_username // "")\t\(.comment // "")\t\(.last_used_day // "")"'
 ```
 
-One thing the CLI made clear: "last used" lives in the audit system tables, and querying those needs account- or metastore-level grants. Being workspace admin isn't enough. Knowing that up front saved a week of "why can't I see it?"
+The `git grep` form deliberately returns filenames rather than matched lines, because a line-oriented search can print a secret accidentally. Token-management output contains token metadata, not token values; listing all users' tokens also requires the appropriate workspace or account administrator privileges.
+
+One thing the CLI made clear: broader "last used" audit history can live in system tables, and querying `system.access.audit` needs the relevant `USE CATALOG`, `USE SCHEMA`, and `SELECT` grants. Being workspace admin isn't enough. Knowing that up front saved a week of "why can't I see it?"
 
 ### Workflow 2 — From a Wrong Number to a Reviewed Pull Request
 
@@ -647,9 +695,10 @@ validation job and the published dashboard use. Fix it on its own branch.
 1. Find where the constant is defined, and check whether any deployed job imports
    that module. If none does, say so: a dev deploy won't exercise this fix.
 2. Run the non-e2e tests locally, and give me the exact command.
-3. Dev testing is approved. Before deploying, show the deployment mode and name
-   prefix, and confirm the dev target writes only to ops_dev. Then run the nightly
-   job and the validation job.
+3. Dev testing is approved. Before deploying, show the resolved target config,
+   deployment mode, and name prefix. Inspect the bundle and source for catalog
+   paths; report whether the intended writes resolve only to ops_dev, and call
+   out what validation cannot prove. Then run the nightly job and validation job.
 4. Report pass/fail per check. If a check fails on real data, report it. Don't
    change the check or the data.
 5. Show me `git diff --stat` and the full diff. Push only after I approve.
@@ -661,24 +710,34 @@ And the chain it ran across two of those branches:
 
 ```bash
 # Branch 1: the fix
-git fetch origin
-git worktree add ../ops-lakehouse-fix -b fix/sensor-baseline-total origin/main
-cd ../ops-lakehouse-fix
+repo_root="$PWD"
+git -C "$repo_root" fetch origin
+git -C "$repo_root" worktree add "$repo_root/../ops-lakehouse-fix" -b fix/sensor-baseline-total origin/main
+cd "$repo_root/../ops-lakehouse-fix" || exit
 git grep -n "SENSOR_BASELINE_TOTAL"                 # defined in one module...
 git grep -n "reconcile" -- jobs/ resources/         # ...imported by no deployed job
 pytest -q -m "not e2e"                              # fast local tests; e2e runs in dev
-git diff --stat origin/main...                      # I read it and approve. Only then:
+# Stage only the intended files, then inspect the staged diff.
+git add -- path/to/reconciliation_module.py
+git diff --cached
+# I read it and approve. Only then:
+git commit -m "Fix sensor baseline total"
 git push -u origin fix/sensor-baseline-total
 
 # Branch 2: harden the checks, then prove them on real dev data
-git worktree add ../ops-lakehouse-verify -b chore/consolidate-verification origin/main
-cd ../ops-lakehouse-verify
-databricks bundle validate -t dev
-databricks bundle summary  -t dev                   # dev prefix, ops_dev only
+cd "$repo_root" || exit
+git -C "$repo_root" worktree add "$repo_root/../ops-lakehouse-verify" -b chore/consolidate-verification origin/main
+cd "$repo_root/../ops-lakehouse-verify" || exit
+databricks bundle validate -t dev -o json           # resolved target config; inspect it
+databricks bundle summary  -t dev                   # resolved names and paths
 databricks bundle deploy   -t dev
 databricks bundle run      -t dev nightly_refresh
 databricks bundle run      -t dev validate_run
-git diff --stat origin/main...
+git add -- path/to/verification/files
+git diff --cached
+# I read it and approve. Only then:
+git commit -m "Consolidate verification checks"
+git push -u origin chore/consolidate-verification
 ```
 
 The part that earned my trust was what the agent *said*, not what it typed:
@@ -692,7 +751,7 @@ Four small branches, merged in a deliberate order through Azure DevOps PRs. I to
 
 ### Workflow 3 — The 403 That Wasn't a Permissions Problem
 
-Creating a Unity Catalog volume failed with an `AbfsRestOperationException` and an empty message. That's the classic signature of a swallowed 403 from ADLS. I first worked this one out in a chat window, pasting error text back and forth. In hindsight, it's the perfect CLI agent task, because every diagnostic step is a read. Today I'd hand it a prompt like this:
+Creating a Unity Catalog volume failed with an `AbfsRestOperationException` and an empty message. That can accompany a storage authorization or network failure, but the message alone does not prove a 403. I first worked this one out in a chat window, pasting error text back and forth. In hindsight, it's the perfect CLI agent task, because every diagnostic step is a read. Today I'd hand it a prompt like this:
 
 ```text
 Creating a volume in ops_dev.vendor_raw fails with an empty AbfsRestOperationException.
@@ -702,7 +761,7 @@ Diagnose it. Read-only: change nothing in Databricks or Azure.
    it, and the managed identity behind its storage credential.
 2. Resolve that identity in Azure. List its role assignments and the storage
    account's network rules.
-3. Tell me whether this is RBAC or the firewall, and show the evidence.
+3. Classify the likely cause—RBAC/ACL, firewall or private endpoint/network, credential scope, or another failure—and show the evidence. Don't infer the layer from the exception label alone.
 4. Write up the fix for the cloud team: the exact firewall rule and roles to add.
    Put the diagnosis in docs/runbooks/storage-access.md on a docs branch, and show
    me the diff before committing.
@@ -715,16 +774,21 @@ The chain behind it:
 databricks schemas get ops_dev.vendor_raw -p OPS -o json | jq '{storage_root, storage_location}'
 databricks external-locations list -p OPS -o json \
   | jq -r '.[] | "\(.name)\t\(.url)\t\(.credential_name)"'
-databricks storage-credentials get <credential-name> -p OPS -o json | jq '.azure_managed_identity'
+credential_name="<credential-name>"
+databricks storage-credentials get "$credential_name" -p OPS -o json | jq '.azure_managed_identity'
 
 # 2. Resolve the access connector's managed identity
-az resource show --ids <access-connector-resource-id> --query identity.principalId -o tsv
+access_connector_id="<access-connector-resource-id>"
+az resource show --ids "$access_connector_id" --query identity.principalId -o tsv
 
 # 3. Network or RBAC?
-az storage account show -n stvendordev01 \
+storage_account="stvendordev01"
+az storage account show -n "$storage_account" \
   --query "networkRuleSet.{default:defaultAction, resources:resourceAccessRules}" -o json
-az role assignment list --assignee <principal-id> --all \
+principal_id="<principal-id>"
+az role assignment list --assignee "$principal_id" --all \
   --query "[].{role:roleDefinitionName, scope:scope}" -o table
+# Only if file-event notifications are part of this design:
 az provider show -n Microsoft.EventGrid --query registrationState -o tsv
 
 # 4. Leave the next person a runbook, not a chat history
@@ -733,7 +797,7 @@ git add docs/runbooks/storage-access.md
 git diff --cached                    # I review; it commits only after I approve
 ```
 
-The insight hides in the error code. `AuthorizationPermissionMismatch` means RBAC: the identity lacks a role. `AuthorizationFailure` means the storage **firewall** rejected the request before roles were ever evaluated. Ours was the second. The fix was a resource-instance rule for the Databricks access connector on the storage account's firewall. The "allow trusted Azure services" checkbox doesn't cover it. File-event notifications needed a few more roles at account scope, plus the Event Grid resource provider registered.
+The error code narrows the search, but it does not prove the layer. `AuthorizationPermissionMismatch` often means the request lacks an operation permission through SAS, RBAC, or an ADLS ACL. `AuthorizationFailure` can reflect network restrictions such as public-access, IP, VNet, or resource-instance rules, but it can also have other authorization causes. Neither code proves evaluation order. Check storage diagnostics, effective role assignments, ADLS ACLs, private-endpoint/DNS reachability, and network rules using the same identity. In the incident described, the cloud team confirmed a resource-instance rule; that is a topology-specific example. The "allow trusted Azure services" setting and Event Grid provider registration are separate concerns, so verify them only when event notifications are part of the design.
 
 The agent couldn't apply that fix, and shouldn't have. The storage account belongs to our cloud team. What it can do is collect the evidence, name the exact rule and roles, and draft the ticket. That turns a multi-day back-and-forth into a single, precise request.
 
@@ -773,29 +837,35 @@ Here are the rails that make CLI agents safe in our environment:
 
 | The fear | The guardrail |
 |---|---|
-| "It'll write to prod." | Humans have **read-only** access to prod catalogs. Only a deployer service principal can write, and it only runs from CI after a merged PR. The agent inherits *your* identity, so if you can't write prod, neither can it. |
-| "It'll see data it shouldn't." | **Unity Catalog** grants are the real boundary. Agents work against dev and sandbox catalogs, and see prod as metadata. |
+| "It'll write to prod." | Humans have **read-only** access to prod catalogs. Production writes use a restricted runtime service principal; changes to its deployed jobs go through CI after a merged PR. The agent uses the current CLI identity, so it cannot gain that runtime identity unless a separate deployment path supplies it. |
+| "It'll see data it shouldn't." | **Unity Catalog** grants are the real boundary. Agents work against dev and sandbox catalogs; for prod, choose a `BROWSE`-only metadata policy or an explicitly approved, audited `SELECT` policy. Effective access still depends on inherited grants, ownership, workspace-catalog bindings, and admin privileges. |
 | "It'll deploy something unreviewed." | `main` is protected: PR required, build validation required. Prod deploys come only from the pipeline. |
 | "It'll leak secrets." | OAuth profiles instead of tokens. Key Vault names, never values. `secret show` and the CLI config file are on the deny list. |
 | "It'll do something we didn't intend." | `CLAUDE.md` encodes the team's tribal knowledge as explicit always/never rules. **Command approval prompts** (allow, ask, deny) gate anything that changes state. |
-| "We can't audit it." | Every action is a command in a transcript, a commit in git, a run in the jobs history, and a query in the warehouse history. CLI work is *more* auditable than portal work, not less. |
+| "We can't audit it." | A captured command transcript, git commit, job run, and query history can form a useful evidence chain. Retention, redaction, service audit configuration, and the identity used still determine what is actually available. |
 
 The Unity Catalog piece, concretely:
 
 ```sql
--- Engineers (and the agents acting as them): browse and read prod, never write
+-- Metadata-only policy for agents and engineers that should not read prod rows
 GRANT BROWSE ON CATALOG ops_prd TO `data-engineers`;
-GRANT USE CATALOG, USE SCHEMA, SELECT ON CATALOG ops_prd TO `data-engineers`;
 
--- Full rights in dev
+-- Optional audited read policy for a separate, approved group
+GRANT USE CATALOG, USE SCHEMA, SELECT ON CATALOG ops_prd TO `approved-prod-readers`;
+
+-- Example dev table privileges (not every catalog or schema privilege)
 GRANT USE CATALOG, USE SCHEMA, SELECT, MODIFY, CREATE TABLE ON CATALOG ops_dev TO `data-engineers`;
 
--- Only the deployer service principal can change prod
-GRANT USE CATALOG, USE SCHEMA, SELECT, MODIFY, CREATE TABLE
-  ON CATALOG ops_prd TO `<prod-deployer-sp-application-id>`;
+-- The runtime service principal gets only the production schema it needs.
+GRANT USE CATALOG ON CATALOG ops_prd TO `<prod-runner-sp-application-id>`;
+GRANT USE SCHEMA ON SCHEMA ops_prd.gold TO `<prod-runner-sp-application-id>`;
+GRANT SELECT, MODIFY, CREATE TABLE
+  ON SCHEMA ops_prd.gold TO `<prod-runner-sp-application-id>`;
 ```
 
-One story convinced me the identity layer matters more than any prompt. While investigating an automated report nobody could explain, I found in query history that it was running as *me*. A personal access token I'd shared "just for testing" had quietly become production plumbing. No agent was involved, and that's precisely the point. The risk was never the AI. It was unscoped credentials. The fix was a service principal with `SELECT` on exactly one view, plus OAuth for everything else. Do that, and an agent in the terminal is the *least* risky actor in the room, because everything it does is written down.
+These grants are additive: they do not revoke access inherited from another group, ownership, or metastore or workspace administrator privileges. Workspace-catalog bindings are a separate restriction and can prevent a workspace from using a catalog even when a grant exists; they do not expand a grant. Use `SHOW GRANTS` and effective-permission checks to find those paths, then deliberately revoke unwanted direct grants. `BROWSE` exposes metadata only; data access still needs `USE CATALOG`, `USE SCHEMA`, and the relevant `SELECT` or `MODIFY` privilege.
+
+One story convinced me the identity layer matters more than any prompt. While investigating an automated report nobody could explain, I found in query history that it was running as *me*. A personal access token I'd shared "just for testing" had quietly become production plumbing. No agent was involved, and that's precisely the point. The risk was never the AI. It was unscoped credentials. The fix was a service principal with `SELECT` on exactly one view, the required `USE CATALOG` and `USE SCHEMA` privileges on its parents, plus OAuth for everything else. Do that, and an agent in the terminal is easier to constrain, because its actions can be tied back to the configured identity and retained evidence. That evidence still depends on the logs and history your platform actually captures.
 
 If you're the engineer trying to get this approved, here's what to ask your security team for. It's a much easier conversation than "please unblock AI":
 

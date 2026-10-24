@@ -1,0 +1,20 @@
+---
+---
+@import "minima";
+
+// Keep long CLI examples and wide comparison tables inside the reading column.
+.post-content {
+  overflow-wrap: break-word;
+
+  pre {
+    overflow-x: auto;
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
